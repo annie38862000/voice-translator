@@ -232,6 +232,11 @@
   </div>
 </div>
 
+<!-- Debug panel -->
+<div style="background:#f5f5f7;border-top:1px solid #e0e0e5;padding:8px 16px;max-height:100px;overflow-y:auto;font-size:0.72rem;font-family:monospace;color:#555;" id="debugLog">
+  <div style="color:#aaa;">── 除錯記錄（按麥克風後看這裡）──</div>
+</div>
+
 <div class="bottom-bar">
   <div class="status-pill">
     <div class="dot" id="statusDot"></div>
@@ -294,10 +299,15 @@ function initRecognition() {
   const r = new SR();
   r.continuous = true; r.interimResults = true;
   r.lang = getLang(selA).bcp;
-  r.onstart  = () => setStatus('listening','收音中…');
-  r.onend    = () => { if (isListening) r.start(); };
-  r.onerror  = e => { if (e.error !== 'no-speech') setStatus('idle','錯誤：'+e.error); };
+  r.onstart  = () => { setStatus('listening','收音中…'); showDebug('🎤 辨識已啟動'); };
+  r.onend    = () => { showDebug('⏹ 辨識結束，重新啟動…'); if (isListening) r.start(); };
+  r.onerror  = e => { showDebug('❌ 錯誤：' + e.error); if (e.error !== 'no-speech') setStatus('idle','錯誤：'+e.error); };
+  r.onnomatch = () => { showDebug('⚠️ 沒有匹配的辨識結果'); };
+  r.onsoundstart = () => { showDebug('🔊 偵測到聲音'); };
+  r.onspeechstart = () => { showDebug('🗣 偵測到語音'); };
+  r.onspeechend = () => { showDebug('🔇 語音結束'); };
   r.onresult = e => {
+    showDebug('✅ 收到結果！');
     let interim = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
       const t = e.results[i][0].transcript;
@@ -347,6 +357,15 @@ async function translateAndShow(text) {
     el.innerHTML = `<span class="interim">翻譯失敗：${e.message}</span>`;
     setStatus('listening','收音中…');
   }
+}
+
+// ── Debug log ──
+function showDebug(msg) {
+  const el = document.getElementById('debugLog');
+  const line = document.createElement('div');
+  line.textContent = new Date().toLocaleTimeString() + '  ' + msg;
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
 }
 
 function toggleMic() { isListening ? stopMic() : startMic(); }
