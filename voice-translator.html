@@ -17,6 +17,7 @@
     overflow: hidden;
   }
 
+  /* ── Top bar ── */
   .top-bar {
     flex-shrink: 0;
     display: flex;
@@ -28,134 +29,112 @@
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid #e0e0e5;
   }
-
   .top-bar h1 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1d1d1f;
-    white-space: nowrap;
-    letter-spacing: -0.02em;
+    font-size: 1rem; font-weight: 600;
+    color: #1d1d1f; white-space: nowrap; letter-spacing: -0.02em;
     margin-right: 4px;
   }
-
   select {
-    flex: 1;
-    min-width: 0;
-    background: #f5f5f7;
-    color: #1d1d1f;
-    border: 1px solid #d2d2d7;
-    border-radius: 10px;
-    padding: 7px 10px;
-    font-size: 0.875rem;
-    font-family: inherit;
-    cursor: pointer;
-    outline: none;
+    flex: 1; min-width: 0;
+    background: #f5f5f7; color: #1d1d1f;
+    border: 1px solid #d2d2d7; border-radius: 10px;
+    padding: 7px 28px 7px 10px;
+    font-size: 0.875rem; font-family: inherit;
+    cursor: pointer; outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
-    -webkit-appearance: none;
-    appearance: none;
+    -webkit-appearance: none; appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    padding-right: 28px;
+    background-repeat: no-repeat; background-position: right 10px center;
   }
-  select:focus {
-    border-color: #0071e3;
-    box-shadow: 0 0 0 3px rgba(0,113,227,0.15);
-  }
-
+  select:focus { border-color: #0071e3; box-shadow: 0 0 0 3px rgba(0,113,227,0.15); }
   .swap-btn {
-    flex-shrink: 0;
-    background: #f5f5f7;
-    border: 1px solid #d2d2d7;
-    color: #0071e3;
-    font-size: 1rem;
-    border-radius: 10px;
-    width: 34px; height: 34px;
-    cursor: pointer;
+    flex-shrink: 0; background: #f5f5f7;
+    border: 1px solid #d2d2d7; color: #0071e3;
+    font-size: 1rem; border-radius: 10px;
+    width: 34px; height: 34px; cursor: pointer;
     transition: background 0.15s, transform 0.3s;
     display: flex; align-items: center; justify-content: center;
   }
   .swap-btn:hover { background: #e8e8ed; transform: rotate(180deg); }
 
-  .output-area {
+  /* ── Conversation area ── */
+  .convo-area {
     flex: 1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    overflow: hidden;
+    overflow-y: auto;
+    padding: 20px;
     background: #ffffff;
-  }
-
-  .output-panel {
     display: flex;
     flex-direction: column;
-    padding: 18px 20px 14px;
-    overflow: hidden;
-    border-right: 1px solid #e0e0e5;
+    gap: 16px;
   }
-  .output-panel:last-child { border-right: none; }
+  .convo-area::-webkit-scrollbar { width: 4px; }
+  .convo-area::-webkit-scrollbar-thumb { background: #d2d2d7; border-radius: 4px; }
 
-  .panel-header {
-    flex-shrink: 0;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: #86868b;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+  /* each sentence block */
+  .sentence {
     display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 10px;
+    flex-direction: column;
+    gap: 4px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f0f0f5;
+    animation: fadeIn 0.25s ease;
   }
-  .panel-header .flag { font-size: 0.95rem; }
+  .sentence:last-child { border-bottom: none; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 
-  .transcript {
-    flex: 1;
-    font-size: 1.35rem;
-    line-height: 1.8;
+  .sentence .original {
+    font-size: 1.25rem;
+    line-height: 1.7;
     color: #1d1d1f;
-    white-space: pre-wrap;
-    word-break: break-word;
-    overflow-y: auto;
     letter-spacing: -0.01em;
   }
-  .transcript::-webkit-scrollbar { width: 4px; }
-  .transcript::-webkit-scrollbar-track { background: transparent; }
-  .transcript::-webkit-scrollbar-thumb { background: #d2d2d7; border-radius: 4px; }
+  .sentence .original.interim {
+    color: #b0b0b8;
+    font-style: italic;
+  }
+  .sentence .lang-tag {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #b0b0b8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 2px;
+  }
+  .sentence .translation {
+    font-size: 1.25rem;
+    line-height: 1.7;
+    color: #0071e3;
+    letter-spacing: -0.01em;
+  }
+  .sentence .translating {
+    font-size: 0.85rem;
+    color: #c0c0c8;
+    font-style: italic;
+  }
 
-  .transcript .interim    { color: #b0b0b8; font-style: italic; }
-  .transcript .final      { color: #1d1d1f; }
-  .transcript .translated { color: #0071e3; }
-  .empty-hint { color: #c7c7cc; font-size: 0.875rem; }
+  .empty-hint {
+    color: #c7c7cc; font-size: 0.9rem;
+    text-align: center; margin: auto;
+  }
 
+  /* ── Bottom bar ── */
   .bottom-bar {
     flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     padding: 14px 20px;
     background: rgba(255,255,255,0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border-top: 1px solid #e0e0e5;
     position: relative;
   }
-
   .status-pill {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: #86868b;
-    position: absolute;
-    left: 20px;
+    position: absolute; left: 20px;
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.75rem; font-weight: 500; color: #86868b;
   }
   .dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: #d2d2d7;
-    transition: background 0.3s;
-    flex-shrink: 0;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #d2d2d7; transition: background 0.3s; flex-shrink: 0;
   }
   .dot.listening  { background: #ff3b30; animation: pulse 1.2s infinite; }
   .dot.processing { background: #ff9f0a; animation: pulse 0.6s infinite; }
@@ -163,15 +142,9 @@
     0%,100% { opacity:1; transform:scale(1); }
     50%      { opacity:0.4; transform:scale(1.4); }
   }
-
   .mic-btn {
-    width: 56px; height: 56px;
-    border-radius: 50%;
-    border: none;
-    background: #0071e3;
-    color: white;
-    font-size: 1.4rem;
-    cursor: pointer;
+    width: 56px; height: 56px; border-radius: 50%; border: none;
+    background: #0071e3; color: white; font-size: 1.4rem; cursor: pointer;
     transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
     box-shadow: 0 2px 12px rgba(0,113,227,0.35);
     display: flex; align-items: center; justify-content: center;
@@ -188,26 +161,15 @@
     70% { box-shadow: 0 0 0 14px rgba(255,59,48,0);   }
     100%{ box-shadow: 0 0 0 0    rgba(255,59,48,0);   }
   }
-
   .clear-btn {
-    position: absolute;
-    right: 20px;
-    background: none;
-    border: none;
-    color: #0071e3;
-    font-size: 0.82rem;
-    font-family: inherit;
-    font-weight: 500;
-    cursor: pointer;
-    padding: 6px 4px;
-    transition: opacity 0.2s;
+    position: absolute; right: 20px;
+    background: none; border: none; color: #0071e3;
+    font-size: 0.82rem; font-family: inherit; font-weight: 500;
+    cursor: pointer; padding: 6px 4px; transition: opacity 0.2s;
   }
   .clear-btn:hover { opacity: 0.65; }
 
   @media (max-width: 480px) {
-    .output-area { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
-    .output-panel { border-right: none; border-bottom: 1px solid #e0e0e5; }
-    .output-panel:last-child { border-bottom: none; }
     .status-pill span { display: none; }
   }
 </style>
@@ -221,20 +183,8 @@
   <select id="langB"></select>
 </div>
 
-<div class="output-area">
-  <div class="output-panel">
-    <div class="panel-header"><span class="flag" id="flagA">🌐</span><span id="headerA">語言 A 原文</span></div>
-    <div class="transcript" id="transcriptA"><span class="empty-hint">原始語音文字將顯示於此…</span></div>
-  </div>
-  <div class="output-panel">
-    <div class="panel-header"><span class="flag" id="flagB">🌐</span><span id="headerB">語言 B 翻譯</span></div>
-    <div class="transcript" id="transcriptB"><span class="empty-hint">翻譯結果將顯示於此…</span></div>
-  </div>
-</div>
-
-<!-- Debug panel -->
-<div style="background:#f5f5f7;border-top:1px solid #e0e0e5;padding:8px 16px;max-height:100px;overflow-y:auto;font-size:0.72rem;font-family:monospace;color:#555;" id="debugLog">
-  <div style="color:#aaa;">── 除錯記錄（按麥克風後看這裡）──</div>
+<div class="convo-area" id="convoArea">
+  <span class="empty-hint">開始收音後，對話將顯示於此…</span>
 </div>
 
 <div class="bottom-bar">
@@ -273,104 +223,116 @@ LANGUAGES.forEach((l,i) => {
 selA.value = 0; selB.value = 2;
 
 function getLang(sel) { return LANGUAGES[parseInt(sel.value)]; }
-function updateHeaders() {
-  const a = getLang(selA), b = getLang(selB);
-  document.getElementById('flagA').textContent = a.flag;
-  document.getElementById('headerA').textContent = a.name + ' 原文';
-  document.getElementById('flagB').textContent = b.flag;
-  document.getElementById('headerB').textContent = b.name + ' 翻譯';
-}
-selA.addEventListener('change', updateHeaders);
-selB.addEventListener('change', updateHeaders);
-updateHeaders();
+selA.addEventListener('change', () => {});
+selB.addEventListener('change', () => {});
 
 function swapLangs() {
   const tmp = selA.value; selA.value = selB.value; selB.value = tmp;
-  updateHeaders();
+}
+
+// ── Conversation blocks ──
+let interimBlock = null; // the current in-progress DOM block
+
+function getConvo() { return document.getElementById('convoArea'); }
+
+function removeEmptyHint() {
+  const hint = getConvo().querySelector('.empty-hint');
+  if (hint) hint.remove();
+}
+
+// Create a new sentence block (interim = still speaking)
+function createBlock(originalText, isInterim) {
+  const a = getLang(selA), b = getLang(selB);
+  const block = document.createElement('div');
+  block.className = 'sentence';
+  block.innerHTML = `
+    <div class="lang-tag">${a.flag} ${a.name}</div>
+    <div class="original${isInterim ? ' interim' : ''}">${originalText}</div>
+    <div class="lang-tag" style="margin-top:6px">${b.flag} ${b.name}</div>
+    <div class="translation translating">翻譯中…</div>
+  `;
+  return block;
+}
+
+function scrollBottom() {
+  const c = getConvo(); c.scrollTop = c.scrollHeight;
 }
 
 // ── Speech Recognition ──
 let recognition = null, isListening = false;
-let interimText = '', finalBuffer = '', translateTimeout = null;
+let translateTimeout = null;
 
 function initRecognition() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { setStatus('error','⚠ 請使用 Chrome 瀏覽器'); return null; }
+  if (!SR) { setStatus('error','⚠ 請使用 Chrome'); return null; }
   const r = new SR();
   r.continuous = true; r.interimResults = true;
   r.lang = getLang(selA).bcp;
-  r.onstart  = () => { setStatus('listening','收音中…'); showDebug('🎤 辨識已啟動'); };
-  r.onend    = () => { showDebug('⏹ 辨識結束，重新啟動…'); if (isListening) r.start(); };
-  r.onerror  = e => { showDebug('❌ 錯誤：' + e.error); if (e.error !== 'no-speech') setStatus('idle','錯誤：'+e.error); };
-  r.onnomatch = () => { showDebug('⚠️ 沒有匹配的辨識結果'); };
-  r.onsoundstart = () => { showDebug('🔊 偵測到聲音'); };
-  r.onspeechstart = () => { showDebug('🗣 偵測到語音'); };
-  r.onspeechend = () => { showDebug('🔇 語音結束'); };
+
+  r.onstart = () => setStatus('listening','收音中…');
+  r.onend   = () => { if (isListening) r.start(); };
+  r.onerror = e => { if (e.error !== 'no-speech') setStatus('idle','錯誤：'+e.error); };
+
   r.onresult = e => {
-    showDebug('✅ 收到結果！');
-    let interim = '';
+    removeEmptyHint();
+    let interimText = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
-      const t = e.results[i][0].transcript;
+      const t = e.results[i][0].transcript.trim();
       if (e.results[i].isFinal) {
-        finalBuffer += t + ' ';
+        // Finalise: remove interim block, create final block + translate
+        if (interimBlock) { interimBlock.remove(); interimBlock = null; }
+        const block = createBlock(t, false);
+        getConvo().appendChild(block);
+        scrollBottom();
         clearTimeout(translateTimeout);
-        translateTimeout = setTimeout(() => translateAndShow(finalBuffer.trim()), 400);
-      } else { interim += t; }
+        translateAndFill(t, block);
+      } else {
+        interimText += t;
+      }
     }
-    interimText = interim;
-    renderTranscriptA();
+    // Update interim block
+    if (interimText) {
+      if (!interimBlock) {
+        interimBlock = createBlock(interimText, true);
+        getConvo().appendChild(interimBlock);
+      } else {
+        interimBlock.querySelector('.original').textContent = interimText;
+      }
+      // Hide translation row while interim
+      interimBlock.querySelector('.translation').textContent = '';
+      interimBlock.querySelectorAll('.lang-tag')[1].style.display = 'none';
+      scrollBottom();
+    }
   };
   return r;
 }
 
-function renderTranscriptA() {
-  const el = document.getElementById('transcriptA');
-  el.innerHTML = '';
-  if (finalBuffer) {
-    const s = document.createElement('span'); s.className='final'; s.textContent=finalBuffer; el.appendChild(s);
-  }
-  if (interimText) {
-    const s = document.createElement('span'); s.className='interim'; s.textContent=interimText; el.appendChild(s);
-  }
-  if (!finalBuffer && !interimText) el.innerHTML='<span class="empty-hint">原始語音文字將顯示於此…</span>';
-  el.scrollTop = el.scrollHeight;
-}
-
-// ── MyMemory Translation ──
-async function translateAndShow(text) {
-  if (!text) return;
-  const src = getLang(selA).mm;
-  const tgt = getLang(selB).mm;
+async function translateAndFill(text, block) {
+  const src = getLang(selA).mm, tgt = getLang(selB).mm;
   setStatus('processing','翻譯中…');
-  const el = document.getElementById('transcriptB');
-  el.innerHTML = '<span class="interim">翻譯中…</span>';
+  const tEl = block.querySelector('.translation');
+  const tTag = block.querySelectorAll('.lang-tag')[1];
+  tTag.style.display = '';
+  tEl.textContent = '翻譯中…';
+  tEl.classList.add('translating');
   try {
     const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${src}|${tgt}`;
     const resp = await fetch(url);
     const data = await resp.json();
     if (data.responseStatus !== 200) throw new Error(data.responseDetails);
-    const translated = data.responseData.translatedText;
-    el.innerHTML = '';
-    const s = document.createElement('span'); s.className='translated'; s.textContent=translated; el.appendChild(s);
+    tEl.textContent = data.responseData.translatedText;
+    tEl.classList.remove('translating');
     setStatus('listening','收音中…');
   } catch(e) {
-    el.innerHTML = `<span class="interim">翻譯失敗：${e.message}</span>`;
+    tEl.textContent = '（翻譯失敗）';
+    tEl.classList.remove('translating');
     setStatus('listening','收音中…');
   }
-}
-
-// ── Debug log ──
-function showDebug(msg) {
-  const el = document.getElementById('debugLog');
-  const line = document.createElement('div');
-  line.textContent = new Date().toLocaleTimeString() + '  ' + msg;
-  el.appendChild(line);
-  el.scrollTop = el.scrollHeight;
+  scrollBottom();
 }
 
 function toggleMic() { isListening ? stopMic() : startMic(); }
 function startMic() {
-  finalBuffer=''; interimText='';
   recognition = initRecognition();
   if (!recognition) return;
   isListening = true;
@@ -379,7 +341,8 @@ function startMic() {
 }
 function stopMic() {
   isListening = false;
-  if (recognition) { recognition.stop(); recognition=null; }
+  if (recognition) { recognition.stop(); recognition = null; }
+  if (interimBlock) { interimBlock.remove(); interimBlock = null; }
   setStatus('idle','待機中');
   document.getElementById('micBtn').classList.remove('active');
 }
@@ -391,9 +354,8 @@ function setStatus(type, text) {
   document.getElementById('statusText').textContent = text;
 }
 function clearAll() {
-  finalBuffer=''; interimText='';
-  renderTranscriptA();
-  document.getElementById('transcriptB').innerHTML='<span class="empty-hint">翻譯結果將顯示於此…</span>';
+  if (interimBlock) { interimBlock = null; }
+  getConvo().innerHTML = '<span class="empty-hint">開始收音後，對話將顯示於此…</span>';
 }
 </script>
 </body>
