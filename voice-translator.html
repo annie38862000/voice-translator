@@ -17,7 +17,6 @@
     overflow: hidden;
   }
 
-  /* ── Top bar ── */
   .top-bar {
     flex-shrink: 0;
     display: flex;
@@ -78,7 +77,6 @@
   }
   .swap-btn:hover { background: #e8e8ed; transform: rotate(180deg); }
 
-  /* ── Output area ── */
   .output-area {
     flex: 1;
     display: grid;
@@ -124,16 +122,11 @@
   .transcript::-webkit-scrollbar-track { background: transparent; }
   .transcript::-webkit-scrollbar-thumb { background: #d2d2d7; border-radius: 4px; }
 
-  .transcript .interim   { color: #b0b0b8; font-style: italic; }
-  .transcript .final     { color: #1d1d1f; }
+  .transcript .interim    { color: #b0b0b8; font-style: italic; }
+  .transcript .final      { color: #1d1d1f; }
   .transcript .translated { color: #0071e3; }
+  .empty-hint { color: #c7c7cc; font-size: 0.875rem; }
 
-  .empty-hint {
-    color: #c7c7cc;
-    font-size: 0.875rem;
-  }
-
-  /* ── Bottom bar ── */
   .bottom-bar {
     flex-shrink: 0;
     display: flex;
@@ -183,11 +176,7 @@
     box-shadow: 0 2px 12px rgba(0,113,227,0.35);
     display: flex; align-items: center; justify-content: center;
   }
-  .mic-btn:hover {
-    background: #0077ed;
-    transform: scale(1.06);
-    box-shadow: 0 4px 20px rgba(0,113,227,0.45);
-  }
+  .mic-btn:hover { background: #0077ed; transform: scale(1.06); }
   .mic-btn:active { transform: scale(0.96); }
   .mic-btn.active {
     background: #ff3b30;
@@ -195,9 +184,9 @@
     animation: ring 1.6s infinite;
   }
   @keyframes ring {
-    0%  { box-shadow: 0 0 0 0   rgba(255,59,48,0.4); }
-    70% { box-shadow: 0 0 0 14px rgba(255,59,48,0); }
-    100%{ box-shadow: 0 0 0 0   rgba(255,59,48,0); }
+    0%  { box-shadow: 0 0 0 0    rgba(255,59,48,0.4); }
+    70% { box-shadow: 0 0 0 14px rgba(255,59,48,0);   }
+    100%{ box-shadow: 0 0 0 0    rgba(255,59,48,0);   }
   }
 
   .clear-btn {
@@ -254,20 +243,20 @@
 
 <script>
 const LANGUAGES = [
-  { code:'zh-TW', name:'中文（繁體）', flag:'🇹🇼', bcp:'zh-TW' },
-  { code:'zh-CN', name:'中文（簡體）', flag:'🇨🇳', bcp:'zh-CN' },
-  { code:'en-US', name:'英文',         flag:'🇺🇸', bcp:'en-US' },
-  { code:'ja-JP', name:'日文',         flag:'🇯🇵', bcp:'ja-JP' },
-  { code:'ko-KR', name:'韓文',         flag:'🇰🇷', bcp:'ko-KR' },
-  { code:'fr-FR', name:'法文',         flag:'🇫🇷', bcp:'fr-FR' },
-  { code:'de-DE', name:'德文',         flag:'🇩🇪', bcp:'de-DE' },
-  { code:'es-ES', name:'西班牙文',     flag:'🇪🇸', bcp:'es-ES' },
-  { code:'it-IT', name:'義大利文',     flag:'🇮🇹', bcp:'it-IT' },
-  { code:'pt-PT', name:'葡萄牙文',     flag:'🇵🇹', bcp:'pt-PT' },
-  { code:'ru-RU', name:'俄文',         flag:'🇷🇺', bcp:'ru-RU' },
-  { code:'ar-SA', name:'阿拉伯文',     flag:'🇸🇦', bcp:'ar-SA' },
-  { code:'th-TH', name:'泰文',         flag:'🇹🇭', bcp:'th-TH' },
-  { code:'vi-VN', name:'越南文',       flag:'🇻🇳', bcp:'vi-VN' },
+  { name:'中文（繁體）', flag:'🇹🇼', bcp:'zh-TW', mm:'zh-TW' },
+  { name:'中文（簡體）', flag:'🇨🇳', bcp:'zh-CN', mm:'zh-CN' },
+  { name:'英文',         flag:'🇺🇸', bcp:'en-US', mm:'en-US' },
+  { name:'日文',         flag:'🇯🇵', bcp:'ja-JP', mm:'ja-JP' },
+  { name:'韓文',         flag:'🇰🇷', bcp:'ko-KR', mm:'ko-KR' },
+  { name:'法文',         flag:'🇫🇷', bcp:'fr-FR', mm:'fr-FR' },
+  { name:'德文',         flag:'🇩🇪', bcp:'de-DE', mm:'de-DE' },
+  { name:'西班牙文',     flag:'🇪🇸', bcp:'es-ES', mm:'es-ES' },
+  { name:'義大利文',     flag:'🇮🇹', bcp:'it-IT', mm:'it-IT' },
+  { name:'葡萄牙文',     flag:'🇵🇹', bcp:'pt-PT', mm:'pt-PT' },
+  { name:'俄文',         flag:'🇷🇺', bcp:'ru-RU', mm:'ru-RU' },
+  { name:'阿拉伯文',     flag:'🇸🇦', bcp:'ar-SA', mm:'ar-SA' },
+  { name:'泰文',         flag:'🇹🇭', bcp:'th-TH', mm:'th-TH' },
+  { name:'越南文',       flag:'🇻🇳', bcp:'vi-VN', mm:'vi-VN' },
 ];
 
 const selA = document.getElementById('langA');
@@ -295,6 +284,7 @@ function swapLangs() {
   updateHeaders();
 }
 
+// ── Speech Recognition ──
 let recognition = null, isListening = false;
 let interimText = '', finalBuffer = '', translateTimeout = null;
 
@@ -304,7 +294,7 @@ function initRecognition() {
   const r = new SR();
   r.continuous = true; r.interimResults = true;
   r.lang = getLang(selA).bcp;
-  r.onstart  = () => setStatus('listening', '收音中…');
+  r.onstart  = () => setStatus('listening','收音中…');
   r.onend    = () => { if (isListening) r.start(); };
   r.onerror  = e => { if (e.error !== 'no-speech') setStatus('idle','錯誤：'+e.error); };
   r.onresult = e => {
@@ -336,29 +326,25 @@ function renderTranscriptA() {
   el.scrollTop = el.scrollHeight;
 }
 
+// ── MyMemory Translation ──
 async function translateAndShow(text) {
   if (!text) return;
-  const srcLang = getLang(selA).name, tgtLang = getLang(selB).name;
+  const src = getLang(selA).mm;
+  const tgt = getLang(selB).mm;
   setStatus('processing','翻譯中…');
   const el = document.getElementById('transcriptB');
   el.innerHTML = '<span class="interim">翻譯中…</span>';
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 1000,
-        system: `You are a professional real-time interpreter. Translate the following ${srcLang} text into ${tgtLang}. Return ONLY the translated text, no explanations.`,
-        messages: [{ role: 'user', content: text }]
-      })
-    });
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${src}|${tgt}`;
+    const resp = await fetch(url);
     const data = await resp.json();
-    const translated = data.content?.[0]?.text || '（翻譯失敗）';
+    if (data.responseStatus !== 200) throw new Error(data.responseDetails);
+    const translated = data.responseData.translatedText;
     el.innerHTML = '';
     const s = document.createElement('span'); s.className='translated'; s.textContent=translated; el.appendChild(s);
     setStatus('listening','收音中…');
   } catch(e) {
-    el.innerHTML = '<span class="interim">翻譯失敗，請確認網路連線</span>';
+    el.innerHTML = `<span class="interim">翻譯失敗：${e.message}</span>`;
     setStatus('listening','收音中…');
   }
 }
