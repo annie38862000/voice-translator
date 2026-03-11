@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>即時語音翻譯</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Top bar ── */
+  .top-bar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid #e0e0e5;
+  }
+
+  .top-bar h1 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1d1d1f;
+    white-space: nowrap;
+    letter-spacing: -0.02em;
+    margin-right: 4px;
+  }
+
+  select {
+    flex: 1;
+    min-width: 0;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    border: 1px solid #d2d2d7;
+    border-radius: 10px;
+    padding: 7px 10px;
+    font-size: 0.875rem;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+  }
+  select:focus {
+    border-color: #0071e3;
+    box-shadow: 0 0 0 3px rgba(0,113,227,0.15);
+  }
+
+  .swap-btn {
+    flex-shrink: 0;
+    background: #f5f5f7;
+    border: 1px solid #d2d2d7;
+    color: #0071e3;
+    font-size: 1rem;
+    border-radius: 10px;
+    width: 34px; height: 34px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.3s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .swap-btn:hover { background: #e8e8ed; transform: rotate(180deg); }
+
+  /* ── Output area ── */
+  .output-area {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+    background: #ffffff;
+  }
+
+  .output-panel {
+    display: flex;
+    flex-direction: column;
+    padding: 18px 20px 14px;
+    overflow: hidden;
+    border-right: 1px solid #e0e0e5;
+  }
+  .output-panel:last-child { border-right: none; }
+
+  .panel-header {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #86868b;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .panel-header .flag { font-size: 0.95rem; }
+
+  .transcript {
+    flex: 1;
+    font-size: 1.35rem;
+    line-height: 1.8;
+    color: #1d1d1f;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-y: auto;
+    letter-spacing: -0.01em;
+  }
+  .transcript::-webkit-scrollbar { width: 4px; }
+  .transcript::-webkit-scrollbar-track { background: transparent; }
+  .transcript::-webkit-scrollbar-thumb { background: #d2d2d7; border-radius: 4px; }
+
+  .transcript .interim   { color: #b0b0b8; font-style: italic; }
+  .transcript .final     { color: #1d1d1f; }
+  .transcript .translated { color: #0071e3; }
+
+  .empty-hint {
+    color: #c7c7cc;
+    font-size: 0.875rem;
+  }
+
+  /* ── Bottom bar ── */
+  .bottom-bar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 20px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid #e0e0e5;
+    position: relative;
+  }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #86868b;
+    position: absolute;
+    left: 20px;
+  }
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #d2d2d7;
+    transition: background 0.3s;
+    flex-shrink: 0;
+  }
+  .dot.listening  { background: #ff3b30; animation: pulse 1.2s infinite; }
+  .dot.processing { background: #ff9f0a; animation: pulse 0.6s infinite; }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.4; transform:scale(1.4); }
+  }
+
+  .mic-btn {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: #0071e3;
+    color: white;
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 2px 12px rgba(0,113,227,0.35);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mic-btn:hover {
+    background: #0077ed;
+    transform: scale(1.06);
+    box-shadow: 0 4px 20px rgba(0,113,227,0.45);
+  }
+  .mic-btn:active { transform: scale(0.96); }
+  .mic-btn.active {
+    background: #ff3b30;
+    box-shadow: 0 2px 12px rgba(255,59,48,0.4);
+    animation: ring 1.6s infinite;
+  }
+  @keyframes ring {
+    0%  { box-shadow: 0 0 0 0   rgba(255,59,48,0.4); }
+    70% { box-shadow: 0 0 0 14px rgba(255,59,48,0); }
+    100%{ box-shadow: 0 0 0 0   rgba(255,59,48,0); }
+  }
+
+  .clear-btn {
+    position: absolute;
+    right: 20px;
+    background: none;
+    border: none;
+    color: #0071e3;
+    font-size: 0.82rem;
+    font-family: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 6px 4px;
+    transition: opacity 0.2s;
+  }
+  .clear-btn:hover { opacity: 0.65; }
+
+  @media (max-width: 480px) {
+    .output-area { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+    .output-panel { border-right: none; border-bottom: 1px solid #e0e0e5; }
+    .output-panel:last-child { border-bottom: none; }
+    .status-pill span { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>🎙 即時翻譯</h1>
+  <select id="langA"></select>
+  <button class="swap-btn" title="交換語言" onclick="swapLangs()">⇄</button>
+  <select id="langB"></select>
+</div>
+
+<div class="output-area">
+  <div class="output-panel">
+    <div class="panel-header"><span class="flag" id="flagA">🌐</span><span id="headerA">語言 A 原文</span></div>
+    <div class="transcript" id="transcriptA"><span class="empty-hint">原始語音文字將顯示於此…</span></div>
+  </div>
+  <div class="output-panel">
+    <div class="panel-header"><span class="flag" id="flagB">🌐</span><span id="headerB">語言 B 翻譯</span></div>
+    <div class="transcript" id="transcriptB"><span class="empty-hint">翻譯結果將顯示於此…</span></div>
+  </div>
+</div>
+
+<div class="bottom-bar">
+  <div class="status-pill">
+    <div class="dot" id="statusDot"></div>
+    <span id="statusText">待機中</span>
+  </div>
+  <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎤</button>
+  <button class="clear-btn" onclick="clearAll()">清除</button>
+</div>
+
+<script>
+const LANGUAGES = [
+  { code:'zh-TW', name:'中文（繁體）', flag:'🇹🇼', bcp:'zh-TW' },
+  { code:'zh-CN', name:'中文（簡體）', flag:'🇨🇳', bcp:'zh-CN' },
+  { code:'en-US', name:'英文',         flag:'🇺🇸', bcp:'en-US' },
+  { code:'ja-JP', name:'日文',         flag:'🇯🇵', bcp:'ja-JP' },
+  { code:'ko-KR', name:'韓文',         flag:'🇰🇷', bcp:'ko-KR' },
+  { code:'fr-FR', name:'法文',         flag:'🇫🇷', bcp:'fr-FR' },
+  { code:'de-DE', name:'德文',         flag:'🇩🇪', bcp:'de-DE' },
+  { code:'es-ES', name:'西班牙文',     flag:'🇪🇸', bcp:'es-ES' },
+  { code:'it-IT', name:'義大利文',     flag:'🇮🇹', bcp:'it-IT' },
+  { code:'pt-PT', name:'葡萄牙文',     flag:'🇵🇹', bcp:'pt-PT' },
+  { code:'ru-RU', name:'俄文',         flag:'🇷🇺', bcp:'ru-RU' },
+  { code:'ar-SA', name:'阿拉伯文',     flag:'🇸🇦', bcp:'ar-SA' },
+  { code:'th-TH', name:'泰文',         flag:'🇹🇭', bcp:'th-TH' },
+  { code:'vi-VN', name:'越南文',       flag:'🇻🇳', bcp:'vi-VN' },
+];
+
+const selA = document.getElementById('langA');
+const selB = document.getElementById('langB');
+LANGUAGES.forEach((l,i) => {
+  selA.add(new Option(`${l.flag} ${l.name}`, i));
+  selB.add(new Option(`${l.flag} ${l.name}`, i));
+});
+selA.value = 0; selB.value = 2;
+
+function getLang(sel) { return LANGUAGES[parseInt(sel.value)]; }
+function updateHeaders() {
+  const a = getLang(selA), b = getLang(selB);
+  document.getElementById('flagA').textContent = a.flag;
+  document.getElementById('headerA').textContent = a.name + ' 原文';
+  document.getElementById('flagB').textContent = b.flag;
+  document.getElementById('headerB').textContent = b.name + ' 翻譯';
+}
+selA.addEventListener('change', updateHeaders);
+selB.addEventListener('change', updateHeaders);
+updateHeaders();
+
+function swapLangs() {
+  const tmp = selA.value; selA.value = selB.value; selB.value = tmp;
+  updateHeaders();
+}
+
+let recognition = null, isListening = false;
+let interimText = '', finalBuffer = '', translateTimeout = null;
+
+function initRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { setStatus('error','⚠ 請使用 Chrome 瀏覽器'); return null; }
+  const r = new SR();
+  r.continuous = true; r.interimResults = true;
+  r.lang = getLang(selA).bcp;
+  r.onstart  = () => setStatus('listening', '收音中…');
+  r.onend    = () => { if (isListening) r.start(); };
+  r.onerror  = e => { if (e.error !== 'no-speech') setStatus('idle','錯誤：'+e.error); };
+  r.onresult = e => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) {
+        finalBuffer += t + ' ';
+        clearTimeout(translateTimeout);
+        translateTimeout = setTimeout(() => translateAndShow(finalBuffer.trim()), 400);
+      } else { interim += t; }
+    }
+    interimText = interim;
+    renderTranscriptA();
+  };
+  return r;
+}
+
+function renderTranscriptA() {
+  const el = document.getElementById('transcriptA');
+  el.innerHTML = '';
+  if (finalBuffer) {
+    const s = document.createElement('span'); s.className='final'; s.textContent=finalBuffer; el.appendChild(s);
+  }
+  if (interimText) {
+    const s = document.createElement('span'); s.className='interim'; s.textContent=interimText; el.appendChild(s);
+  }
+  if (!finalBuffer && !interimText) el.innerHTML='<span class="empty-hint">原始語音文字將顯示於此…</span>';
+  el.scrollTop = el.scrollHeight;
+}
+
+async function translateAndShow(text) {
+  if (!text) return;
+  const srcLang = getLang(selA).name, tgtLang = getLang(selB).name;
+  setStatus('processing','翻譯中…');
+  const el = document.getElementById('transcriptB');
+  el.innerHTML = '<span class="interim">翻譯中…</span>';
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+        system: `You are a professional real-time interpreter. Translate the following ${srcLang} text into ${tgtLang}. Return ONLY the translated text, no explanations.`,
+        messages: [{ role: 'user', content: text }]
+      })
+    });
+    const data = await resp.json();
+    const translated = data.content?.[0]?.text || '（翻譯失敗）';
+    el.innerHTML = '';
+    const s = document.createElement('span'); s.className='translated'; s.textContent=translated; el.appendChild(s);
+    setStatus('listening','收音中…');
+  } catch(e) {
+    el.innerHTML = '<span class="interim">翻譯失敗，請確認網路連線</span>';
+    setStatus('listening','收音中…');
+  }
+}
+
+function toggleMic() { isListening ? stopMic() : startMic(); }
+function startMic() {
+  finalBuffer=''; interimText='';
+  recognition = initRecognition();
+  if (!recognition) return;
+  isListening = true;
+  recognition.start();
+  document.getElementById('micBtn').classList.add('active');
+}
+function stopMic() {
+  isListening = false;
+  if (recognition) { recognition.stop(); recognition=null; }
+  setStatus('idle','待機中');
+  document.getElementById('micBtn').classList.remove('active');
+}
+function setStatus(type, text) {
+  const d = document.getElementById('statusDot');
+  d.className = 'dot';
+  if (type==='listening')  d.classList.add('listening');
+  if (type==='processing') d.classList.add('processing');
+  document.getElementById('statusText').textContent = text;
+}
+function clearAll() {
+  finalBuffer=''; interimText='';
+  renderTranscriptA();
+  document.getElementById('transcriptB').innerHTML='<span class="empty-hint">翻譯結果將顯示於此…</span>';
+}
+</script>
+</body>
+</html>
