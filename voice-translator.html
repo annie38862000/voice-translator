@@ -11,16 +11,53 @@
     background: #f5f5f7; color: #1d1d1f;
     height: 100vh; display: flex; flex-direction: column; overflow: hidden;
   }
+
+  /* ── Top bar ── */
   .top-bar {
-    flex-shrink: 0; display: flex; align-items: center; gap: 10px;
-    padding: 14px 20px;
+    flex-shrink: 0;
+    padding: 12px 20px;
     background: rgba(255,255,255,0.85);
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid #e0e0e5;
+    display: flex; flex-direction: column; gap: 10px;
   }
-  .top-bar h1 { font-size: 1rem; font-weight: 600; color: #1d1d1f; letter-spacing: -0.02em; }
-  .top-bar span { font-size: 0.8rem; color: #86868b; }
+  .top-title {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .top-title h1 { font-size: 1rem; font-weight: 600; color: #1d1d1f; letter-spacing: -0.02em; }
+  .top-title span { font-size: 0.78rem; color: #86868b; }
 
+  .pair-row {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .pair-label {
+    font-size: 0.72rem; font-weight: 600; color: #86868b;
+    text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap;
+  }
+
+  /* Language A selector */
+  .lang-selects {
+    display: flex; align-items: center; gap: 8px; flex: 1;
+  }
+  select {
+    flex: 1; min-width: 0;
+    background: #f5f5f7; color: #1d1d1f;
+    border: 1px solid #d2d2d7; border-radius: 10px;
+    padding: 7px 28px 7px 10px;
+    font-size: 0.875rem; font-family: inherit;
+    cursor: pointer; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+  }
+  select:focus { border-color: #0071e3; box-shadow: 0 0 0 3px rgba(0,113,227,0.15); }
+
+  .divider-icon {
+    font-size: 1rem; color: #86868b; flex-shrink: 0; user-select: none;
+  }
+
+  /* ── Conversation ── */
   .convo-area {
     flex: 1; overflow-y: auto;
     padding: 20px 20px 100px;
@@ -48,17 +85,16 @@
     color: #0071e3; letter-spacing: -0.01em;
   }
   .translating { color: #c0c0c8 !important; font-style: italic; font-size: 0.9rem !important; }
-
   .empty-hint { color: #c7c7cc; font-size: 0.9rem; text-align: center; margin: auto; }
 
+  /* ── Bottom bar ── */
   .bottom-bar {
     position: fixed; bottom: 0; left: 0; right: 0;
     display: flex; align-items: center; justify-content: center;
     padding: 14px 20px;
     background: rgba(255,255,255,0.85);
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid #e0e0e5;
-    z-index: 10;
+    border-top: 1px solid #e0e0e5; z-index: 10;
   }
   .status-pill {
     position: absolute; left: 20px;
@@ -85,8 +121,7 @@
   .mic-btn:hover { background: #0077ed; transform: scale(1.06); }
   .mic-btn:active { transform: scale(0.96); }
   .mic-btn.active {
-    background: #ff3b30;
-    box-shadow: 0 2px 12px rgba(255,59,48,0.4);
+    background: #ff3b30; box-shadow: 0 2px 12px rgba(255,59,48,0.4);
     animation: ring 1.6s infinite;
   }
   @keyframes ring {
@@ -95,10 +130,9 @@
     100%{ box-shadow: 0 0 0 0    rgba(255,59,48,0);   }
   }
   .clear-btn {
-    position: absolute; right: 20px;
-    background: none; border: none; color: #0071e3;
-    font-size: 0.82rem; font-family: inherit; font-weight: 500;
-    cursor: pointer; padding: 6px 4px; transition: opacity 0.2s;
+    position: absolute; right: 20px; background: none; border: none;
+    color: #0071e3; font-size: 0.82rem; font-family: inherit;
+    font-weight: 500; cursor: pointer; padding: 6px 4px; transition: opacity 0.2s;
   }
   .clear-btn:hover { opacity: 0.65; }
 </style>
@@ -106,8 +140,18 @@
 <body>
 
 <div class="top-bar">
-  <h1>🎙 即時翻譯</h1>
-  <span>自動偵測語言・雙語輸出</span>
+  <div class="top-title">
+    <h1>🎙 即時翻譯</h1>
+    <span>自動偵測・雙向翻譯</span>
+  </div>
+  <div class="pair-row">
+    <span class="pair-label">語言</span>
+    <div class="lang-selects">
+      <select id="selA" onchange="onLangChange()"></select>
+      <span class="divider-icon">⇄</span>
+      <select id="selB" onchange="onLangChange()"></select>
+    </div>
+  </div>
 </div>
 
 <div class="convo-area" id="convoArea">
@@ -124,34 +168,67 @@
 </div>
 
 <script>
+// ── Language definitions ──
+var LANGS = [
+  { code: 'zh-TW', mm: 'zh-TW', label: '🇹🇼 中文（繁體）', detect: /[\u4e00-\u9fff]/ },
+  { code: 'zh-CN', mm: 'zh-CN', label: '🇨🇳 中文（簡體）', detect: /[\u4e00-\u9fff]/ },
+  { code: 'en-US', mm: 'en-US', label: '🇺🇸 英文',         detect: /^[a-zA-Z\s.,!?'"-]+$/ },
+  { code: 'ja-JP', mm: 'ja-JP', label: '🇯🇵 日文',         detect: /[\u3040-\u309f\u30a0-\u30ff]/ },
+  { code: 'ko-KR', mm: 'ko-KR', label: '🇰🇷 韓文',         detect: /[\uac00-\ud7af]/ },
+  { code: 'fr-FR', mm: 'fr-FR', label: '🇫🇷 法文',         detect: null },
+  { code: 'de-DE', mm: 'de-DE', label: '🇩🇪 德文',         detect: null },
+  { code: 'es-ES', mm: 'es-ES', label: '🇪🇸 西班牙文',     detect: null },
+  { code: 'th-TH', mm: 'th-TH', label: '🇹🇭 泰文',         detect: /[\u0e00-\u0e7f]/ },
+  { code: 'vi-VN', mm: 'vi-VN', label: '🇻🇳 越南文',       detect: null },
+];
+
+var selA = document.getElementById('selA');
+var selB = document.getElementById('selB');
+LANGS.forEach(function(l, i) {
+  selA.add(new Option(l.label, i));
+  selB.add(new Option(l.label, i));
+});
+selA.value = 0; // 中文繁體
+selB.value = 2; // 英文
+
+function getLangA() { return LANGS[parseInt(selA.value)]; }
+function getLangB() { return LANGS[parseInt(selB.value)]; }
+
+function onLangChange() {
+  if (isListening) { stopMic(); startMic(); }
+}
+
+// ── Detect which of the two selected languages was spoken ──
+function detectSpokenLang(text) {
+  var a = getLangA(), b = getLangB();
+  // 優先用 detect pattern 判斷
+  if (a.detect && a.detect.test(text)) return a;
+  if (b.detect && b.detect.test(text)) return b;
+  // fallback：預設 A
+  return a;
+}
+
+function getOtherLang(spokenLang) {
+  var a = getLangA(), b = getLangB();
+  return spokenLang.code === a.code ? b : a;
+}
+
 // ── State ──
 var recognition = null;
 var isListening = false;
-var currentLang = 'zh-TW';
+var currentSpeechLang = null;
 var interimBlock = null;
 
 // ── Helpers ──
 function getConvo() { return document.getElementById('convoArea'); }
-
-function removeEmptyHint() {
-  var hint = getConvo().querySelector('.empty-hint');
-  if (hint) hint.remove();
-}
-
-function scrollBottom() {
-  var c = getConvo(); c.scrollTop = c.scrollHeight;
-}
-
+function removeEmptyHint() { var h = getConvo().querySelector('.empty-hint'); if (h) h.remove(); }
+function scrollBottom() { var c = getConvo(); c.scrollTop = c.scrollHeight; }
 function setStatus(type, text) {
   var d = document.getElementById('statusDot');
   d.className = 'dot';
   if (type === 'listening')  d.classList.add('listening');
   if (type === 'processing') d.classList.add('processing');
   document.getElementById('statusText').textContent = text;
-}
-
-function detectLang(text) {
-  return /[\u4e00-\u9fff\u3400-\u4dbf]/.test(text) ? 'zh' : 'en';
 }
 
 // ── DOM ──
@@ -171,16 +248,19 @@ function createBlock(text, isInterim) {
 // ── Translation ──
 async function translateAndFill(text, block) {
   var tEl = block.querySelector('.translation');
-  var detected = detectLang(text);
-  var src = detected === 'zh' ? 'zh-TW' : 'en-US';
-  var tgt = detected === 'zh' ? 'en-US' : 'zh-TW';
+  var spoken = detectSpokenLang(text);
+  var target = getOtherLang(spoken);
+
+  if (spoken.mm === target.mm) { tEl.textContent = ''; return; }
 
   tEl.textContent = '…';
   tEl.classList.add('translating');
   setStatus('processing', '翻譯中…');
 
   try {
-    var url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(text) + '&langpair=' + src + '|' + tgt;
+    var url = 'https://api.mymemory.translated.net/get?q='
+      + encodeURIComponent(text)
+      + '&langpair=' + spoken.mm + '|' + target.mm;
     var resp = await fetch(url);
     var data = await resp.json();
     if (data.responseStatus !== 200) throw new Error(data.responseDetails);
@@ -198,18 +278,16 @@ async function translateAndFill(text, block) {
 function initRecognition(lang) {
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { setStatus('error', '⚠ 請使用 Chrome'); return null; }
-
   var r = new SR();
   r.continuous = false;
   r.interimResults = true;
   r.lang = lang;
 
   r.onstart = function() { setStatus('listening', '收音中…'); };
-
   r.onerror = function(e) {
-    if (e.error !== 'no-speech') setStatus('idle', '錯誤：' + e.error);
+    if (e.error === 'no-speech' || e.error === 'aborted') return;
+    setStatus('idle', '錯誤：' + e.error);
   };
-
   r.onresult = function(e) {
     removeEmptyHint();
     var interimText = '';
@@ -221,9 +299,9 @@ function initRecognition(lang) {
         getConvo().appendChild(block);
         scrollBottom();
         translateAndFill(t, block);
-        // 切換辨識語言
-        var detected = detectLang(t);
-        currentLang = detected === 'zh' ? 'en-US' : 'zh-TW';
+        // 下一輪切換到另一種語言
+        var spoken = detectSpokenLang(t);
+        currentSpeechLang = getOtherLang(spoken).code;
       } else {
         interimText += t;
       }
@@ -238,27 +316,24 @@ function initRecognition(lang) {
       scrollBottom();
     }
   };
-
-  r.onend = function() {
-    if (isListening) restartRecognition();
-  };
-
+  r.onend = function() { if (isListening) restartRecognition(); };
   return r;
 }
 
 function restartRecognition() {
-  recognition = initRecognition(currentLang);
-  if (recognition) recognition.start();
+  setTimeout(function() {
+    if (!isListening) return;
+    recognition = initRecognition(currentSpeechLang);
+    if (recognition) recognition.start();
+  }, 200);
 }
 
 // ── Controls ──
-function toggleMic() {
-  if (isListening) { stopMic(); } else { startMic(); }
-}
+function toggleMic() { if (isListening) { stopMic(); } else { startMic(); } }
 
 function startMic() {
-  currentLang = 'zh-TW';
-  recognition = initRecognition(currentLang);
+  currentSpeechLang = getLangA().code;
+  recognition = initRecognition(currentSpeechLang);
   if (!recognition) return;
   isListening = true;
   recognition.start();
