@@ -19,48 +19,30 @@
     background: rgba(255,255,255,0.85);
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid #e0e0e5;
-    display: flex; flex-direction: column; gap: 10px;
+    display: flex; align-items: center; justify-content: space-between;
   }
-  .top-title {
-    display: flex; align-items: center; gap: 8px;
-  }
+  .top-title { display: flex; align-items: center; gap: 8px; }
   .top-title h1 { font-size: 1rem; font-weight: 600; color: #1d1d1f; letter-spacing: -0.02em; }
   .top-title span { font-size: 0.78rem; color: #86868b; }
 
-  .pair-row {
-    display: flex; align-items: center; gap: 8px;
+  /* Compact language picker in top-right */
+  .lang-picker {
+    display: flex; align-items: center; gap: 6px;
+    background: #f5f5f7; border: 1px solid #d2d2d7;
+    border-radius: 12px; padding: 5px 10px;
   }
-  .pair-label {
-    font-size: 0.72rem; font-weight: 600; color: #86868b;
-    text-transform: uppercase; letter-spacing: 0.06em; white-space: nowrap;
-  }
-
-  /* Language A selector */
-  .lang-selects {
-    display: flex; align-items: center; gap: 8px; flex: 1;
-  }
-  select {
-    flex: 1; min-width: 0;
-    background: #f5f5f7; color: #1d1d1f;
-    border: 1px solid #d2d2d7; border-radius: 10px;
-    padding: 7px 28px 7px 10px;
-    font-size: 0.875rem; font-family: inherit;
-    cursor: pointer; outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+  .lang-picker select {
+    border: none; background: transparent;
+    font-size: 1.1rem; cursor: pointer; outline: none;
     -webkit-appearance: none; appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat; background-position: right 10px center;
+    padding: 0; width: 28px; text-align: center;
   }
-  select:focus { border-color: #0071e3; box-shadow: 0 0 0 3px rgba(0,113,227,0.15); }
-
-  .divider-icon {
-    font-size: 1rem; color: #86868b; flex-shrink: 0; user-select: none;
-  }
+  .lang-picker .divider-icon { font-size: 0.75rem; color: #b0b0b8; }
 
   /* ── Conversation ── */
   .convo-area {
     flex: 1; overflow-y: auto;
-    padding: 20px 20px 100px;
+    padding: 20px 20px 140px;
     background: #fff;
     display: flex; flex-direction: column; gap: 16px;
   }
@@ -75,29 +57,65 @@
   .sentence:last-child { border-bottom: none; }
   @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
 
+  /* Align bubbles by speaker */
+  .sentence.speaker-a { align-items: flex-start; }
+  .sentence.speaker-b { align-items: flex-end; }
+
+  .bubble-wrap { display: flex; flex-direction: column; gap: 4px; max-width: 82%; }
+  .sentence.speaker-b .bubble-wrap { align-items: flex-end; }
+
+  .spk-label { font-size: 0.68rem; font-weight: 600; color: #b0b0b8; letter-spacing: 0.06em; text-transform: uppercase; }
+
   .original {
-    font-size: 1.25rem; line-height: 1.7;
-    color: #1d1d1f; letter-spacing: -0.01em;
+    font-size: 1.2rem; line-height: 1.7; color: #1d1d1f; letter-spacing: -0.01em;
   }
   .original.interim { color: #b0b0b8; font-style: italic; }
-  .translation {
-    font-size: 1.25rem; line-height: 1.7;
-    color: #0071e3; letter-spacing: -0.01em;
-  }
-  .translating { color: #c0c0c8 !important; font-style: italic; font-size: 0.9rem !important; }
+  .translation { font-size: 1.2rem; line-height: 1.7; color: #0071e3; letter-spacing: -0.01em; }
+  .translating { color: #c0c0c8 !important; font-style: italic; font-size: 0.88rem !important; }
   .empty-hint { color: #c7c7cc; font-size: 0.9rem; text-align: center; margin: auto; }
 
   /* ── Bottom bar ── */
   .bottom-bar {
     position: fixed; bottom: 0; left: 0; right: 0;
-    display: flex; align-items: center; justify-content: center;
-    padding: 14px 20px;
-    background: rgba(255,255,255,0.85);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 12px 20px 16px;
+    background: rgba(255,255,255,0.92);
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid #e0e0e5; z-index: 10;
+    border-top: 1px solid #e0e0e5; z-index: 10; gap: 10px;
+  }
+
+  /* Speaker toggle */
+  .speaker-toggle {
+    display: flex; align-items: center; gap: 0;
+    border: 1.5px solid #d2d2d7; border-radius: 12px; overflow: hidden;
+    width: 100%; max-width: 360px;
+  }
+  .spk-btn {
+    flex: 1; padding: 8px 12px;
+    background: none; border: none; font-family: inherit;
+    font-size: 0.82rem; font-weight: 500; cursor: pointer;
+    color: #86868b; transition: background 0.15s, color 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .spk-btn:first-child { border-right: 1.5px solid #d2d2d7; }
+  .spk-btn.active { background: #0071e3; color: white; }
+  .spk-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0;
+    display: none;
+  }
+  .spk-btn.active .spk-dot { display: block; animation: pulse 1.2s infinite; }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.4; transform:scale(1.4); }
+  }
+
+  /* Mic row */
+  .mic-row {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; position: relative;
   }
   .status-pill {
-    position: absolute; left: 20px;
+    position: absolute; left: 0;
     display: flex; align-items: center; gap: 6px;
     font-size: 0.75rem; font-weight: 500; color: #86868b;
   }
@@ -107,30 +125,23 @@
   }
   .dot.listening  { background: #ff3b30; animation: pulse 1.2s infinite; }
   .dot.processing { background: #ff9f0a; animation: pulse 0.6s infinite; }
-  @keyframes pulse {
-    0%,100% { opacity:1; transform:scale(1); }
-    50%      { opacity:0.4; transform:scale(1.4); }
-  }
+
   .mic-btn {
-    width: 56px; height: 56px; border-radius: 50%; border: none;
-    background: #0071e3; color: white; font-size: 1.4rem; cursor: pointer;
+    width: 52px; height: 52px; border-radius: 50%; border: none;
+    background: #0071e3; color: white; font-size: 1.3rem; cursor: pointer;
     transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
     box-shadow: 0 2px 12px rgba(0,113,227,0.35);
     display: flex; align-items: center; justify-content: center;
   }
   .mic-btn:hover { background: #0077ed; transform: scale(1.06); }
-  .mic-btn:active { transform: scale(0.96); }
-  .mic-btn.active {
-    background: #ff3b30; box-shadow: 0 2px 12px rgba(255,59,48,0.4);
-    animation: ring 1.6s infinite;
-  }
+  .mic-btn.active { background: #ff3b30; box-shadow: 0 2px 12px rgba(255,59,48,0.4); animation: ring 1.6s infinite; }
   @keyframes ring {
     0%  { box-shadow: 0 0 0 0    rgba(255,59,48,0.4); }
     70% { box-shadow: 0 0 0 14px rgba(255,59,48,0);   }
     100%{ box-shadow: 0 0 0 0    rgba(255,59,48,0);   }
   }
   .clear-btn {
-    position: absolute; right: 20px; background: none; border: none;
+    position: absolute; right: 0; background: none; border: none;
     color: #0071e3; font-size: 0.82rem; font-family: inherit;
     font-weight: 500; cursor: pointer; padding: 6px 4px; transition: opacity 0.2s;
   }
@@ -142,81 +153,95 @@
 <div class="top-bar">
   <div class="top-title">
     <h1>🎙 即時翻譯</h1>
-    <span>自動偵測・雙向翻譯</span>
+    <span>雙向對話翻譯</span>
   </div>
-  <div class="pair-row">
-    <span class="pair-label">語言</span>
-    <div class="lang-selects">
-      <select id="selA" onchange="onLangChange()"></select>
-      <span class="divider-icon">⇄</span>
-      <select id="selB" onchange="onLangChange()"></select>
-    </div>
+  <div class="lang-picker">
+    <select id="selA" onchange="onLangChange()"></select>
+    <span class="divider-icon">⇄</span>
+    <select id="selB" onchange="onLangChange()"></select>
   </div>
 </div>
 
 <div class="convo-area" id="convoArea">
-  <span class="empty-hint">開始收音後，對話將顯示於此…</span>
+  <span class="empty-hint">選擇說話者，開始收音…</span>
 </div>
 
 <div class="bottom-bar">
-  <div class="status-pill">
-    <div class="dot" id="statusDot"></div>
-    <span id="statusText">待機中</span>
+  <!-- Speaker toggle -->
+  <div class="speaker-toggle">
+    <button class="spk-btn active" id="spkBtnA" onclick="setSpeaker('A')">
+      <span class="spk-dot"></span>
+      <span id="spkLabelA">🇹🇼 中文（繁體）</span>
+    </button>
+    <button class="spk-btn" id="spkBtnB" onclick="setSpeaker('B')">
+      <span class="spk-dot"></span>
+      <span id="spkLabelB">🇺🇸 英文</span>
+    </button>
   </div>
-  <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎤</button>
-  <button class="clear-btn" onclick="clearAll()">清除</button>
+  <!-- Mic -->
+  <div class="mic-row">
+    <div class="status-pill">
+      <div class="dot" id="statusDot"></div>
+      <span id="statusText">待機中</span>
+    </div>
+    <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎤</button>
+    <button class="clear-btn" onclick="clearAll()">清除</button>
+  </div>
 </div>
 
 <script>
-// ── Language definitions ──
 var LANGS = [
-  { code: 'zh-TW', mm: 'zh-TW', label: '🇹🇼 中文（繁體）', detect: /[\u4e00-\u9fff]/ },
-  { code: 'zh-CN', mm: 'zh-CN', label: '🇨🇳 中文（簡體）', detect: /[\u4e00-\u9fff]/ },
-  { code: 'en-US', mm: 'en-US', label: '🇺🇸 英文',         detect: /^[a-zA-Z\s.,!?'"-]+$/ },
-  { code: 'ja-JP', mm: 'ja-JP', label: '🇯🇵 日文',         detect: /[\u3040-\u309f\u30a0-\u30ff]/ },
-  { code: 'ko-KR', mm: 'ko-KR', label: '🇰🇷 韓文',         detect: /[\uac00-\ud7af]/ },
-  { code: 'fr-FR', mm: 'fr-FR', label: '🇫🇷 法文',         detect: null },
-  { code: 'de-DE', mm: 'de-DE', label: '🇩🇪 德文',         detect: null },
-  { code: 'es-ES', mm: 'es-ES', label: '🇪🇸 西班牙文',     detect: null },
-  { code: 'th-TH', mm: 'th-TH', label: '🇹🇭 泰文',         detect: /[\u0e00-\u0e7f]/ },
-  { code: 'vi-VN', mm: 'vi-VN', label: '🇻🇳 越南文',       detect: null },
+  { code: 'zh-TW', mm: 'zh-TW', label: '🇹🇼 中文（繁體）', flag: '🇹🇼' },
+  { code: 'zh-CN', mm: 'zh-CN', label: '🇨🇳 中文（簡體）', flag: '🇨🇳' },
+  { code: 'en-US', mm: 'en-US', label: '🇺🇸 英文',         flag: '🇺🇸' },
+  { code: 'ja-JP', mm: 'ja-JP', label: '🇯🇵 日文',         flag: '🇯🇵' },
+  { code: 'ko-KR', mm: 'ko-KR', label: '🇰🇷 韓文',         flag: '🇰🇷' },
+  { code: 'fr-FR', mm: 'fr-FR', label: '🇫🇷 法文',         flag: '🇫🇷' },
+  { code: 'de-DE', mm: 'de-DE', label: '🇩🇪 德文',         flag: '🇩🇪' },
+  { code: 'es-ES', mm: 'es-ES', label: '🇪🇸 西班牙文',     flag: '🇪🇸' },
+  { code: 'th-TH', mm: 'th-TH', label: '🇹🇭 泰文',         flag: '🇹🇭' },
+  { code: 'vi-VN', mm: 'vi-VN', label: '🇻🇳 越南文',       flag: '🇻🇳' },
 ];
 
 var selA = document.getElementById('selA');
 var selB = document.getElementById('selB');
 LANGS.forEach(function(l, i) {
-  selA.add(new Option(l.label, i));
-  selB.add(new Option(l.label, i));
+  selA.add(new Option(l.flag, i));
+  selB.add(new Option(l.flag, i));
 });
-selA.value = 0; // 中文繁體
-selB.value = 2; // 英文
+selA.value = 0; selB.value = 2;
 
 function getLangA() { return LANGS[parseInt(selA.value)]; }
 function getLangB() { return LANGS[parseInt(selB.value)]; }
 
 function onLangChange() {
+  updateSpkLabels();
   if (isListening) { stopMic(); startMic(); }
 }
 
-// ── Detect which of the two selected languages was spoken ──
-function detectSpokenLang(text) {
-  var a = getLangA(), b = getLangB();
-  // 優先用 detect pattern 判斷
-  if (a.detect && a.detect.test(text)) return a;
-  if (b.detect && b.detect.test(text)) return b;
-  // fallback：預設 A
-  return a;
+function updateSpkLabels() {
+  document.getElementById('spkLabelA').textContent = getLangA().label;
+  document.getElementById('spkLabelB').textContent = getLangB().label;
+}
+selA.addEventListener('change', updateSpkLabels);
+selB.addEventListener('change', updateSpkLabels);
+
+// ── Speaker state ──
+var currentSpeaker = 'A'; // 'A' or 'B'
+
+function setSpeaker(s) {
+  currentSpeaker = s;
+  document.getElementById('spkBtnA').className = 'spk-btn' + (s === 'A' ? ' active' : '');
+  document.getElementById('spkBtnB').className = 'spk-btn' + (s === 'B' ? ' active' : '');
+  if (isListening) { stopMic(); startMic(); }
 }
 
-function getOtherLang(spokenLang) {
-  var a = getLangA(), b = getLangB();
-  return spokenLang.code === a.code ? b : a;
-}
+function getActiveLang() { return currentSpeaker === 'A' ? getLangA() : getLangB(); }
+function getTargetLang() { return currentSpeaker === 'A' ? getLangB() : getLangA(); }
 
 // ── State ──
 var recognition = null;
 var isListening = false;
-var currentSpeechLang = null;
 var interimBlock = null;
 
 // ── Helpers ──
@@ -232,35 +257,39 @@ function setStatus(type, text) {
 }
 
 // ── DOM ──
-function createBlock(text, isInterim) {
+function createBlock(text, isInterim, speaker) {
   var block = document.createElement('div');
-  block.className = 'sentence';
+  block.className = 'sentence speaker-' + speaker.toLowerCase();
+  var wrap = document.createElement('div');
+  wrap.className = 'bubble-wrap';
+  var lbl = document.createElement('div');
+  lbl.className = 'spk-label';
+  lbl.textContent = speaker === 'A' ? getLangA().label : getLangB().label;
   var orig = document.createElement('div');
   orig.className = 'original' + (isInterim ? ' interim' : '');
   orig.textContent = text;
   var trans = document.createElement('div');
   trans.className = 'translation';
-  block.appendChild(orig);
-  block.appendChild(trans);
+  wrap.appendChild(lbl);
+  wrap.appendChild(orig);
+  wrap.appendChild(trans);
+  block.appendChild(wrap);
   return block;
 }
 
 // ── Translation ──
 async function translateAndFill(text, block) {
   var tEl = block.querySelector('.translation');
-  var spoken = detectSpokenLang(text);
-  var target = getOtherLang(spoken);
-
-  if (spoken.mm === target.mm) { tEl.textContent = ''; return; }
+  var src = getActiveLang().mm;
+  var tgt = getTargetLang().mm;
+  if (src === tgt) { tEl.textContent = ''; return; }
 
   tEl.textContent = '…';
   tEl.classList.add('translating');
   setStatus('processing', '翻譯中…');
-
   try {
     var url = 'https://api.mymemory.translated.net/get?q='
-      + encodeURIComponent(text)
-      + '&langpair=' + spoken.mm + '|' + target.mm;
+      + encodeURIComponent(text) + '&langpair=' + src + '|' + tgt;
     var resp = await fetch(url);
     var data = await resp.json();
     if (data.responseStatus !== 200) throw new Error(data.responseDetails);
@@ -275,40 +304,47 @@ async function translateAndFill(text, block) {
 }
 
 // ── Speech Recognition ──
-function initRecognition(lang) {
+function initRecognition() {
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { setStatus('error', '⚠ 請使用 Chrome'); return null; }
   var r = new SR();
-  r.continuous = false;
+  r.continuous = true;
   r.interimResults = true;
-  r.lang = lang;
+  r.lang = getActiveLang().code;
 
   r.onstart = function() { setStatus('listening', '收音中…'); };
   r.onerror = function(e) {
     if (e.error === 'no-speech' || e.error === 'aborted') return;
     setStatus('idle', '錯誤：' + e.error);
   };
+  r.onend = function() {
+    if (isListening) {
+      setTimeout(function() {
+        if (!isListening) return;
+        recognition = initRecognition();
+        if (recognition) recognition.start();
+      }, 200);
+    }
+  };
   r.onresult = function(e) {
     removeEmptyHint();
+    var spk = currentSpeaker;
     var interimText = '';
     for (var i = e.resultIndex; i < e.results.length; i++) {
       var t = e.results[i][0].transcript.trim();
       if (e.results[i].isFinal) {
         if (interimBlock) { interimBlock.remove(); interimBlock = null; }
-        var block = createBlock(t, false);
+        var block = createBlock(t, false, spk);
         getConvo().appendChild(block);
         scrollBottom();
         translateAndFill(t, block);
-        // 下一輪切換到另一種語言
-        var spoken = detectSpokenLang(t);
-        currentSpeechLang = getOtherLang(spoken).code;
       } else {
         interimText += t;
       }
     }
     if (interimText) {
       if (!interimBlock) {
-        interimBlock = createBlock(interimText, true);
+        interimBlock = createBlock(interimText, true, spk);
         getConvo().appendChild(interimBlock);
       } else {
         interimBlock.querySelector('.original').textContent = interimText;
@@ -316,24 +352,13 @@ function initRecognition(lang) {
       scrollBottom();
     }
   };
-  r.onend = function() { if (isListening) restartRecognition(); };
   return r;
 }
 
-function restartRecognition() {
-  setTimeout(function() {
-    if (!isListening) return;
-    recognition = initRecognition(currentSpeechLang);
-    if (recognition) recognition.start();
-  }, 200);
-}
-
-// ── Controls ──
 function toggleMic() { if (isListening) { stopMic(); } else { startMic(); } }
 
 function startMic() {
-  currentSpeechLang = getLangA().code;
-  recognition = initRecognition(currentSpeechLang);
+  recognition = initRecognition();
   if (!recognition) return;
   isListening = true;
   recognition.start();
@@ -350,7 +375,7 @@ function stopMic() {
 
 function clearAll() {
   interimBlock = null;
-  getConvo().innerHTML = '<span class="empty-hint">開始收音後，對話將顯示於此…</span>';
+  getConvo().innerHTML = '<span class="empty-hint">選擇說話者，開始收音…</span>';
 }
 </script>
 </body>
