@@ -216,7 +216,14 @@ function getLangB() { return LANGS[parseInt(selB.value)]; }
 
 function onLangChange() {
   updateSpkLabels();
-  if (isListening) { stopMic(); startMic(); }
+  if (isListening) {
+    if (recognition) { recognition.stop(); recognition = null; }
+    setTimeout(function() {
+      if (!isListening) return;
+      recognition = initRecognition();
+      if (recognition) recognition.start();
+    }, 200);
+  }
 }
 
 function updateSpkLabels() {
@@ -233,7 +240,14 @@ function setSpeaker(s) {
   currentSpeaker = s;
   document.getElementById('spkBtnA').className = 'spk-btn' + (s === 'A' ? ' active' : '');
   document.getElementById('spkBtnB').className = 'spk-btn' + (s === 'B' ? ' active' : '');
-  if (isListening) { stopMic(); startMic(); }
+  if (isListening) {
+    if (recognition) { recognition.stop(); recognition = null; }
+    setTimeout(function() {
+      if (!isListening) return;
+      recognition = initRecognition();
+      if (recognition) recognition.start();
+    }, 200);
+  }
 }
 
 function getActiveLang() { return currentSpeaker === 'A' ? getLangA() : getLangB(); }
