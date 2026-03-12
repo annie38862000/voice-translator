@@ -61,7 +61,7 @@
   .convo-area {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
+    padding: 20px 20px 100px;
     background: #ffffff;
     display: flex;
     flex-direction: column;
@@ -92,14 +92,6 @@
     color: #b0b0b8;
     font-style: italic;
   }
-  .sentence .lang-tag {
-    font-size: 0.68rem;
-    font-weight: 600;
-    color: #b0b0b8;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 2px;
-  }
   .sentence .translation {
     font-size: 1.25rem;
     line-height: 1.7;
@@ -119,13 +111,14 @@
 
   /* ── Bottom bar ── */
   .bottom-bar {
-    flex-shrink: 0;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
     display: flex; align-items: center; justify-content: center;
     padding: 14px 20px;
     background: rgba(255,255,255,0.85);
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     border-top: 1px solid #e0e0e5;
-    position: relative;
+    z-index: 10;
   }
   .status-pill {
     position: absolute; left: 20px;
@@ -178,9 +171,7 @@
 
 <div class="top-bar">
   <h1>🎙 即時翻譯</h1>
-  <select id="langA"></select>
-  <button class="swap-btn" title="交換語言" onclick="swapLangs()">⇄</button>
-  <select id="langB"></select>
+  <span style="font-size:0.8rem;color:#86868b;">自動偵測語言・雙語輸出</span>
 </div>
 
 <div class="convo-area" id="convoArea">
@@ -242,14 +233,11 @@ function removeEmptyHint() {
 
 // Create a new sentence block (interim = still speaking)
 function createBlock(originalText, isInterim) {
-  const a = getLang(selA), b = getLang(selB);
   const block = document.createElement('div');
   block.className = 'sentence';
   block.innerHTML = `
-    <div class="lang-tag">${a.flag} ${a.name}</div>
     <div class="original${isInterim ? ' interim' : ''}">${originalText}</div>
-    <div class="lang-tag" style="margin-top:6px">${b.flag} ${b.name}</div>
-    <div class="translation translating">翻譯中…</div>
+    <div class="translation translating"></div>
   `;
   return block;
 }
@@ -307,16 +295,24 @@ function initRecognition() {
   return r;
 }
 
+// ── Language detection & translation ──
+function detectLang(text) {
+  // Check if text contains Chinese characters
+  return /[\u4e00-\u9fff\u3400-\u4dbf]/.test(text) ? 'zh' : 'en';
+}
+
 async function translateAndFill(text, block) {
-  const src = getLang(selA).mm, tgt = getLang(selB).mm;
   setStatus('processing','翻譯中…');
   const tEl = block.querySelector('.translation');
-  const tTag = block.querySelectorAll('.lang-tag')[1];
-  tTag.style.display = '';
-  tEl.textContent = '翻譯中…';
+  tEl.textContent = '…';
   tEl.classList.add('translating');
+
+  const detectedLang = detectLang(text);
+  const srcMM = detectedLang === 'zh' ? 'zh-TW' : 'en-US';
+  const tgtMM = detectedLang === 'zh' ? 'en-US' : 'zh-TW';
+
   try {
-    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${src}|${tgt}`;
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${srcMM}|${tgtMM}`;
     const resp = await fetch(url);
     const data = await resp.json();
     if (data.responseStatus !== 200) throw new Error(data.responseDetails);
@@ -333,7 +329,8 @@ async function translateAndFill(text, block) {
 
 function toggleMic() { isListening ? stopMic() : startMic(); }
 function startMic() {
-  recognition = initRecognition();
+  currentLang = 'zh-TW';
+  recognition = initRecognition(currentLang);
   if (!recognition) return;
   isListening = true;
   recognition.start();
