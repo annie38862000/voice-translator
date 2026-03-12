@@ -334,12 +334,13 @@ function initRecognition() {
   };
   r.onend = function() {
     if (!isListening) return;
-    // 不管是自然結束還是被 stop()，都在這裡重啟
-    setTimeout(function() {
-      if (!isListening) return;
-      recognition = initRecognition();
-      if (recognition) recognition.start();
-    }, 150);
+    if (recognition === r) { // 只有當前 recognition 才重啟，避免舊實例干擾
+      setTimeout(function() {
+        if (!isListening) return;
+        recognition = initRecognition();
+        if (recognition) recognition.start();
+      }, 150);
+    }
   };
   r.onresult = function(e) {
     removeEmptyHint();
