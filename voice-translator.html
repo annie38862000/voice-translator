@@ -257,6 +257,7 @@ function getTargetLang() { return currentSpeaker === 'A' ? getLangB() : getLangA
 var recognition = null;
 var isListening = false;
 var interimBlock = null;
+var pendingRestart = false; // 旗標：onend 觸發時需要重啟
 
 // ── Helpers ──
 function getConvo() { return document.getElementById('convoArea'); }
@@ -332,13 +333,13 @@ function initRecognition() {
     setStatus('idle', '錯誤：' + e.error);
   };
   r.onend = function() {
-    if (isListening) {
-      setTimeout(function() {
-        if (!isListening) return;
-        recognition = initRecognition();
-        if (recognition) recognition.start();
-      }, 150);
-    }
+    if (!isListening) return;
+    // 不管是自然結束還是被 stop()，都在這裡重啟
+    setTimeout(function() {
+      if (!isListening) return;
+      recognition = initRecognition();
+      if (recognition) recognition.start();
+    }, 150);
   };
   r.onresult = function(e) {
     removeEmptyHint();
