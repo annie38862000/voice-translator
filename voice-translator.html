@@ -194,13 +194,13 @@ var LANGS = [
   { code: 'zh-TW', mm: 'zh-TW', label: '🇹🇼 中文（繁體）', flag: '🇹🇼' },
   { code: 'zh-CN', mm: 'zh-CN', label: '🇨🇳 中文（簡體）', flag: '🇨🇳' },
   { code: 'en-US', mm: 'en-US', label: '🇺🇸 英文',         flag: '🇺🇸' },
-  { code: 'ja-JP', mm: 'ja-JP', label: '🇯🇵 日文',         flag: '🇯🇵' },
-  { code: 'ko-KR', mm: 'ko-KR', label: '🇰🇷 韓文',         flag: '🇰🇷' },
-  { code: 'fr-FR', mm: 'fr-FR', label: '🇫🇷 法文',         flag: '🇫🇷' },
-  { code: 'de-DE', mm: 'de-DE', label: '🇩🇪 德文',         flag: '🇩🇪' },
-  { code: 'es-ES', mm: 'es-ES', label: '🇪🇸 西班牙文',     flag: '🇪🇸' },
-  { code: 'th-TH', mm: 'th-TH', label: '🇹🇭 泰文',         flag: '🇹🇭' },
-  { code: 'vi-VN', mm: 'vi-VN', label: '🇻🇳 越南文',       flag: '🇻🇳' },
+  { code: 'ja-JP', mm: 'ja',    label: '🇯🇵 日文',         flag: '🇯🇵' },
+  { code: 'ko-KR', mm: 'ko',    label: '🇰🇷 韓文',         flag: '🇰🇷' },
+  { code: 'fr-FR', mm: 'fr',    label: '🇫🇷 法文',         flag: '🇫🇷' },
+  { code: 'de-DE', mm: 'de',    label: '🇩🇪 德文',         flag: '🇩🇪' },
+  { code: 'es-ES', mm: 'es',    label: '🇪🇸 西班牙文',     flag: '🇪🇸' },
+  { code: 'th-TH', mm: 'th',    label: '🇹🇭 泰文',         flag: '🇹🇭' },
+  { code: 'vi-VN', mm: 'vi',    label: '🇻🇳 越南文',       flag: '🇻🇳' },
 ];
 
 var selA = document.getElementById('selA');
@@ -252,6 +252,8 @@ function setSpeaker(s) {
 
 function getActiveLang() { return currentSpeaker === 'A' ? getLangA() : getLangB(); }
 function getTargetLang() { return currentSpeaker === 'A' ? getLangB() : getLangA(); }
+
+var currentSpeaker = 'A';
 
 // ── State ──
 var recognition = null;
